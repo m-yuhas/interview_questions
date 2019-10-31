@@ -15,7 +15,7 @@ def reversal(s: str) -> str:
     Returns:
         str: the reversed string
     """
-    s = list(s: str) -> str:
+    s = list(s)
     for i in range(int(len(s)/2)):
         temp = s[i]
         s[i] = s[len(s) - 1 - i]
@@ -59,17 +59,23 @@ def sentence_reversal_with_punctuation(s: str) -> str:
         str: the sentence with the word order reversed and punctuation
             preserved
     """
+    s = list(s)
+    s[0] = s[0].lower()
     valid_punctuation = ['.', '?', '!']
-    for mark in valid_punctuation:
-        if s[-1] == mark:
-            mark = mark
-            s = reversal(s[:-1]).split()
-            break
+    mark = ''
+    if s[-1] in valid_punctuation:
+        mark = s[-1]
+        s = s[:-1]
+    s = reversal(''.join(s)).split()
     for i in range(len(s)):
         s[i] = reversal(s[i])
-    return ' '.join(s) + mark
+    s = ' '.join(s) + mark
+    s = list(s)
+    s[0] = s[0].upper()
+    return ''.join(s)
 
-def paragraph_reversal(p):
+
+def paragraph_reversal(p: str) -> str:
     """Reverse the order of sentences in a paragraph.
 
     This function can run in O(n) time.  Because Python requires returning a
@@ -77,13 +83,43 @@ def paragraph_reversal(p):
     perform the operation in place.
 
     Arguments:
-        p (str): input paragraph
+        p : str
+            input paragraph
 
     Returns:
         str: the paragraph with the order of sentences reversed
     """
+    sentence_breaks = ['.', '?', '!']
+    sentences = []
+    sentence = []
+    state = 'normal_text'
+    for i in range(len(p)):
+        if state == 'normal_text':
+            sentence.append(p[i])
+            if p[i] in sentence_breaks:
+                state = 'punctuation'
+        elif state == 'punctuation':
+            sentence.append(p[i])
+            if p[i].strip() != '':
+                state = 'normal_text'
+            else:
+                state = 'white_space'
+        elif state == 'white_space':
+            if p[i].strip() == '':
+                continue
+            elif p[i].upper() == p[i]:
+                sentences.append(''.join(sentence))
+                sentence = [p[i]]
+            state = 'normal_text'
+    if sentence[-1].strip != '':
+        sentences.append(' ')
+    sentences.append(''.join(sentence))
+    for i in range(int(len(sentences)/2)):
+        temp = sentences[i]
+        sentences[i] = sentences[len(sentences) - 1 - i]
+        sentences[len(sentences) - 1 - i] = temp
+    return ''.join(sentences)
     
-
 
 if __name__ == '__main__':
     # Problem 1:
@@ -97,11 +133,20 @@ if __name__ == '__main__':
     print('Problem #2:\n{}'.format(
         sentence_reversal("The quick brown fox jumped over the lazy dog.")))
 
+
     # Problem 3:
+    # Write a function that takes a sentence and reverses the order of its
+    # words.  The punctuation at the end of the sentence must be preserved as
+    # well as a capital letter at the beginning of the sentence.
+    print('Problem #3:\n{}'.format(
+        sentence_reversal_with_punctuation(
+            "The quick brown fox jumped over the lazy dog.")))
+    
+    # Problem 4:
     # Write a function that takes a paragraph (string containing multiple
     # sentences) and reverses the order of the sentences, preserving their
     # original punctuation.
-    print('Problem #3:\n{}'.format(
+    print('Problem #4:\n{}'.format(
         paragraph_reversal(
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
             "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut "

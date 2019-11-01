@@ -17,3 +17,18 @@ if __name__ == "__main__":
     for i in deck:
         print(i)
         
+    # Problem 1:
+    # Write a function that shuffles a deck of cards in O(n) time.
+    
+    # Problem 2:
+    # How good is the O(n) shuffle function, i.e. is every card equally likely
+    # to end up in each final position?
+    
+    # Problem 3:
+    # Write a shuffle function that minimizes the difference between the
+    # probabilities of a card ending up in any given position in the shuffled
+    # deck.
+    
+    # Problem 4:
+    # Simulate the new shuffle function to show its performance.
+        

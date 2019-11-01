@@ -61,13 +61,17 @@ class Stack(object):
         self.output_queue = Queue()
         
     def push(self, el: Any) -> None:
-        pass
+        self.input_queue.put(el)
     
     def pop(self) -> Any:
-        pass
+        while self.input_queue.qsize() > 1:
+            self.output_queue.put(self.input_queue.get())
+        while not self.output_queue.empty():
+            self.input_queue.put(self.output_queue.get())
+        return self.input_queue.get_nowait()
     
     def size(self) -> int:
-        pass
+        return self.input_queue.qsize() + self.output_queue.qsize()
 
 if __name__ == '__main__':
     # Problem 1:
@@ -84,6 +88,15 @@ if __name__ == '__main__':
     
     # Problem 2:
     # Create a stack using only FIFO queues.
+    input = ['a', 'b', 'c']
+    output = []
+    stack = Stack()
+    for item in input:
+        stack.push(item)
+    while stack.size() > 0:
+        output.append(stack.pop())
+    print('Problem #2:\nInput order:\t{}\nOutput order:\t{}'.format(
+        input, output))
     
     # Problem 3:
     # Implement singly linked list.

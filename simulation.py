@@ -2,8 +2,15 @@
 
 
 from random import randint
-from numpy import mean, histogram
-import matplotlib.pyplot as pp
+from sys import modules
+from typing import List
+
+
+try:
+    from matplotlib import pyplot
+except:
+    pass
+
 
 
 def simulate_river_crossing(n: int, iterations: int) -> float:
@@ -17,7 +24,7 @@ def simulate_river_crossing(n: int, iterations: int) -> float:
             The number of river crossings to simulate
 
     Returns:
-        float: the mean of the number of hops of all simulated river crossings.
+        float: the mean of the number of hops of all simulated river crossings
     """
     hops_list = []
     for i in range(iterations):
@@ -28,6 +35,32 @@ def simulate_river_crossing(n: int, iterations: int) -> float:
             hops += 1
         hops_list.append(hops)
     return sum(hops_list) / len(hops_list)
+
+
+def simulate_range_of_crossings(n_min: int,
+                                n_max: int,
+                                n_inc: int,
+                                iterations: int) -> List[float]:
+    """Simulate <iterations> number of river crossings from n_min lily pads to
+    n_max lily pads.
+    
+    Arguments:
+        n_min: int
+            The lowest number of lily pads in the river
+        n_max: int
+            The highest number of lily pads in the river
+        n_inc: int
+            The resolution of the simulation
+        iterations: int
+            The number of river crossings to simulate for n
+
+    Returns:
+        List[float]: list of the mean number of hops for all n
+    """
+    means = []
+    for i in range(n_min, n_max, n_inc):
+        means.append(simulate_river_crossing(i, iterations))
+    return means
 
 
 if __name__ == '__main__':
@@ -43,6 +76,14 @@ if __name__ == '__main__':
     # Problem 2:
     # Simulate the expected number of hops for the frog to cross the river with
     # n lily pads where n ranges from 0 to 100.
+    simulated_result = simulate_range_of_crossings(0, 100, 1, int(1e3))
+    print('Problem #2:\n{}'.format(simulated_result))
+    if 'matplotlib.pyplot' in modules:
+        pyplot.plot(simulated_result)
+        pyplot.xlabel('Number of lily pads in the river')
+        pyplot.ylabel('Average number of hops to cross the river')
+        pyplot.title('Simulated Results for the Frog Crossing the River')
+        pyplot.show()
     
     # Problem 3:
     # Find a recurrence relation to find a the actual expected value of the

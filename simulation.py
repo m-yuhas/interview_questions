@@ -86,7 +86,7 @@ if __name__ == '__main__':
         pyplot.show()
     
     # Problem 3:
-    # Find a recurrence relation to find a the actual expected value of the
+    # Find a recurrence relation to find the actual expected value of the
     # number of hops the frog will need to cross the river with n lily pads.
     
     # Problem 4:

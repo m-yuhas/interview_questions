@@ -47,14 +47,22 @@ class Card(object):
         else:
             return False
 
-    def __hash__(self) -> int:
-        """Return the hash of this card such that two cards with the same
-        attributes have the same hash.
+    def __ne__(self, other: 'Card') -> bool:
+        """Return False if this card is the same card as 'other'; otherwise
+        return True.
+        
+        Arguments:
+            other: 'Card'
+                The card with which to compare this one
 
         Returns:
-            int: the hash of this card
+            bool: False if the cards are equal, True otherwise
+
+        Raises:
+            AttributeError: if the object being compared is not a Card and does
+                not inherit from the Card class
         """
-        return hash((self.suit, self.rank))
+        return not self.__eq__(other)
 
     def __str__(self) -> str:
         """Return a string representing this card.
@@ -110,7 +118,82 @@ def get_order_bias(shuffle_algorithm: Callable[[List[Any]], List[Any]],
     for (x, y) in [(x, y) for x in range(deck_size) for y in range(deck_size)]:
         bias_matrix[x][y] = bias_matrix[x][y] / float(deck_size * iterations)
     return bias_matrix
+
+
+def unstable_sort(deck: List[Any]) -> List[Any]:
+    """Sort of list of object, assuming that <, ==, and > are implement for the
+    objects in the list.
     
+    This function implements a heap sort, which has an average performance of
+    O(nlog(n)) and a worst case performance of O(nlog(n)) and a memory usage of
+    O(n).  This sort is not stable so the order between identical objects in the
+    input array is not preserved.
+    
+    Arguments:
+        deck: List[Any]
+            List of objects to be sorted
+
+    Returns:
+        List[Any]: sorted list of objects
+    """
+    heap = []
+    for i in range(len(deck)):
+        heap.append(deck[i])
+        j = i
+        while j > 0:
+            if j % 2 == 0 and heap[j // 2] < heap[j]:
+                temp = heap[j]
+                heap[j] = heap[j // 2]
+                heap[j // 2] = temp
+                j = j // 2
+            elif j % 2 == 1 and heap[(j - 1) // 2] < heap[j]:
+                temp = heap[j]
+                heap[j] = heap[(j - 1) // 2]
+                heap[(j - 1) // 2] = temp
+                j = (j - 1) // 2
+            else:
+                break
+    print("Heap: {}".format(heap))
+    for i in range(len(heap) - 1, 0, -1):
+        temp = heap[i]
+        heap[i] = heap[0]
+        heap[0] = temp
+        j = 0
+        while ((j + 1) * 2) - 1 < i:
+            if (j + 1) * 2 < i \
+                    and heap[(j + 1) * 2] > heap[((j + 1) * 2) - 1] \
+                    and heap[((j + 1) * 2)] > heap[j]:
+                temp = heap[j]
+                heap[j] = heap[((j + 1) * 2)]
+                heap[((j + 1) * 2)] = temp
+                j = ((j + 1) * 2)
+            elif heap[((j + 1) * 2) - 1] > heap[j]: 
+                temp = heap[j]
+                heap[j] = heap[((j + 1) * 2) - 1]
+                heap[((j + 1) * 2) - 1] = temp
+                j = ((j + 1) * 2) - 1
+            else:
+                break
+    return heap
+
+
+def stable_sort(deck: List[Any]) -> List[Any]:
+    """Sort of list of object, assuming that <, ==, and > are implement for the
+    objects in the list.
+
+    This function implements a merge sort, which has an average performance of
+    O(nlog(n)) and a worst case performance of O(nlog(n)) and a memory usage of
+    O(n).  This sort is stable so the order between identical objects in the
+    input array is preserved.
+    
+    Arguments:
+        deck: List[Any]
+            List of objects to be sorted
+
+    Returns:
+        List[Any]: sorted list of objects
+    """
+    return deck
 
 
 if __name__ == '__main__':
@@ -134,10 +217,18 @@ if __name__ == '__main__':
     
     # Problem 3:
     # Write a function that sorts a deck of shuffled cards in O(nlog(n)) time.
-    # (Assume that the <, ==, and > operators are defined on the included Card
-    # class.)
-    
+    # If multiple cards of the same rank and suit exist in the deck, it is not
+    # important that they maintain their order in the sorted array.  In other
+    # words an A♠ is identical to any other A♠.  Assume that the <, ==, and >
+    # operators are defined on the included Card class.
+    print(unstable_sort([9, 5, 6, 7, 2, 8, 1, 3, 4, 0, 9, 5]))
+    # print('Problem #3\n{}'.format(
+    #    [str(card) for card in unstable_sort(shuffle(deck))]))
+
     # Problem 4:
-    # Simulate the performance of the sorting algorithm for decks from size 0 to
-    # 1000.
-        
+    # Write a function that sorts a deck of shuffled cards in O(nlong(n)) time.
+    # If multiple cards of the same rank and suit exist in the deck their order
+    # must be maintained. Assume that the <, ==, and > operators are defined on
+    # the included Card class.
+    print('Problem #4\n{}'.format(
+        [str(card) for card in stable_sort(shuffle(deck))]))

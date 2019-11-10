@@ -13,83 +13,115 @@ except:
 
 
 
-def simulate_river_crossing(n: int, iterations: int) -> float:
-    """Simulate <iterations> number of river crossing with n lily pads.
+def simulate_average_hops(n_lily_pads: List[int],
+                          iterations: int) -> List[float]:
+    """Simulate <iterations> number of river crossing for each n lily pads in
+    <n_lily_pads> and return a list of the average number of hops for each n.
     
     Arguments:
-        n: int
-            The number of lily pads in the river
+        n_lily_pads: List[int]
+            A list of all numbers of lily pads in the river for which the
+            average number of hops should be simulated
 
         iterations: int
             The number of river crossings to simulate
 
     Returns:
-        float: the mean of the number of hops of all simulated river crossings
-    """
-    hops_list = []
-    for i in range(iterations):
-        location = n + 1
-        hops = 0
-        while location != 0:
-            location -= randint(1, location)
-            hops += 1
-        hops_list.append(hops)
-    return sum(hops_list) / len(hops_list)
-
-
-def simulate_range_of_crossings(n_min: int,
-                                n_max: int,
-                                n_inc: int,
-                                iterations: int) -> List[float]:
-    """Simulate <iterations> number of river crossings from n_min lily pads to
-    n_max lily pads.
-    
-    Arguments:
-        n_min: int
-            The lowest number of lily pads in the river
-        n_max: int
-            The highest number of lily pads in the river
-        n_inc: int
-            The resolution of the simulation
-        iterations: int
-            The number of river crossings to simulate for n
-
-    Returns:
-        List[float]: list of the mean number of hops for all n
+        List[float]: the average number of hops to cross the river for each
+            number of lily pads provided in n_lily_pads
     """
     means = []
-    for i in range(n_min, n_max, n_inc):
-        means.append(simulate_river_crossing(i, iterations))
+    for n in n_lily_pads:
+        hops_list = []
+        for i in range(iterations):
+            location = n + 1
+            hops = 0
+            while location != 0:
+                location -= randint(1, location)
+                hops += 1
+            hops_list.append(hops)
+        means.append(sum(hops_list) / len(hops_list))
     return means
 
 
+def actual_expected_hops(n_lily_pads: List[int]) -> List[float]:
+    """Return the actual expected value of the number of hops the frog will need
+    to cross the river for each n lily pads in <n_lily_pads>.
+    
+    Here it is fairly straightforward to derive the recurrence relation:
+    
+    E(n) = 1 + (1/(n+1))*sum(E(m)) where E(m) is summed from m = 0 to n - 1.
+    
+    However, this means that to calculate the expected value for any given n, we
+    would have to sum all the previous expected values.  This could be
+    accomplished by dynamic programming and keeping a running sum of the
+    expected values as the results list is generated.  The other option is to
+    use algebra and pull E(n-1) out from summation.  After this step we multiply
+    both sides by (n + 1)/n and then subtract 1/n to transform the summation
+    into another E(n-1) term.  Simplifying this equation yields the recurrence
+    relation:
+    
+    E(n) = 1/(n+1) + E(n-1),
+    
+    which is calculated in this function for all provided n.
+    
+    Arguments:
+        n_lily_pads: List[int]
+            A list of all numbers of lily pads in the river for which the
+            average number of hops should be simulated
+
+    Returns:
+        List[float]: the expected number of hops to cross the river for each
+            number of lily pads provided in n_lily_pads
+    """
+    expected = [1]
+    for n in range(1, max(n_lily_pads) + 1):
+        expected.append((1/(n + 1)) + expected[-1])
+    final = []
+    for n in n_lily_pads:
+        final.append(expected[n])
+    return final
+
+
 if __name__ == '__main__':
+    n_range = range(0, 100)
+    
     # Problem 1:
-    # A frog is trying to cross a river.  There are nine lily pads forming a
+    # A frog is trying to cross a river.  There are n lily pads forming a
     # path across the river.  It is equally likely that the frog will jump on
     # any of the lily pads including the opposing bank. Once the frog hops once,
     # it will continue moving forward, hopping on any of the remain lily pads or
     # the opposing bank with equal probability.  Create a simulation to find
-    # the expected number of hops for the frog to cross the river.
-    print('Problem #1:\n{}'.format(simulate_river_crossing(9, int(1e3))))
-
-    # Problem 2:
-    # Simulate the expected number of hops for the frog to cross the river with
-    # n lily pads where n ranges from 0 to 100.
-    simulated_result = simulate_range_of_crossings(0, 100, 1, int(1e3))
-    print('Problem #2:\n{}'.format(simulated_result))
+    # the expected number of hops for the frog to cross the river for 0 to 99
+    # lily pads.
+    simulated_average = simulate_average_hops(n_range, int(1e3))
+    print('Problem #1:\n{}'.format(simulated_average))
     if 'matplotlib.pyplot' in modules:
-        pyplot.plot(simulated_result)
+        pyplot.plot(simulated_average)
         pyplot.xlabel('Number of lily pads in the river')
         pyplot.ylabel('Average number of hops to cross the river')
         pyplot.title('Simulated Results for the Frog Crossing the River')
         pyplot.show()
+
+    # Problem 2:
+    # Find a recurrence relation to find the actual expected value of the number
+    # of hops the frog will need to cross the river with n lily pads.
+    actual_expected = actual_expected_hops(n_range)
+    print('Problem #2:\n{}'.format(actual_expected))
+    if 'matplotlib.pyplot' in modules:
+        pyplot.plot(n_range, simulated_average, 'b', label='Simulated Average')
+        pyplot.plot(n_range, actual_expected, 'r', label='Expected Value')
+        pyplot.xlabel('Number of lily pads in the river')
+        pyplot.ylabel('Number of hops to cross the river')
+        pyplot.title('Simulated Results vs. Recurrence Relation')
+        pyplot.legend()
+        pyplot.show()
     
     # Problem 3:
-    # Find a recurrence relation to find the actual expected value of the
-    # number of hops the frog will need to cross the river with n lily pads.
+    # Simulate the probability of the frog taking m hops to cross a river with 9
+    # lily pads.  In other words, simulate probability mass function for number
+    # of hops to cross the river.
     
     # Problem 4:
-    # Compare the error between the simulation and the recurrence relation for n
-    # lily pads.  How many simulated river crossings are required to make the
-    # error less than 1e-3?
+    # Find a recurrence relation that provides the exact probability mass
+    # function for the number of hops it takes to cross the river.

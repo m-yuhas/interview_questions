@@ -42,7 +42,7 @@ class Card(object):
             AttributeError: if the object being compared is not a Card and does
                 not inherit from the Card class
         """
-        if self.suit == other.suite and self.rank == other.rank:
+        if self.suit == other.suit and self.rank == other.rank:
             return True
         else:
             return False
@@ -63,6 +63,87 @@ class Card(object):
                 not inherit from the Card class
         """
         return not self.__eq__(other)
+
+    def __lt__(self, other: 'Card') -> bool:
+        """Return True if this card has a lesser value than the 'other' card;
+        otherwise Return False.
+        
+        Arguments:
+            other: 'Card'
+                The card with which to compare this one
+
+        Returns:
+            bool: True if lesser than 'other'
+
+        Raises:
+            AttributeError: if the object being compared is not a Card and does
+                not inherit from the Card class
+            ValueError: if the one of the objects has an inappropriate rank
+        """
+        if int.from_bytes(self.suit.encode(), byteorder='big') \
+                < int.from_bytes(other.suit.encode(), byteorder='big'):
+            return True
+        elif int.from_bytes(self.suit.encode(), byteorder='big') \
+                == int.from_bytes(other.suit.encode(), byteorder='big'):
+            ranks = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8,
+                     '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}
+            return ranks[str(self.rank)] < ranks[str(other.rank)]
+        else:
+            return False
+
+    def __le__(self, other: 'Card') -> bool:
+        """Return True if this card has a value less than or equal to that of
+        the 'other' card; otherwise Return False.
+        
+        Arguments:
+            other: 'Card'
+                The card with which to compare this one
+
+        Returns:
+            bool: True if less than or equal to 'other'
+
+        Raises:
+            AttributeError: if the object being compared is not a Card and does
+                not inherit from the Card class
+            ValueError: if the one of the objects has an inappropriate rank
+        """
+        return self.__eq__(other) or self.__lt__(other)
+
+    def __gt__(self, other: 'Card') -> bool:
+        """Return True if this card has a value greater than that of the 'other'
+        card; otherwise Return False.
+        
+        Arguments:
+            other: 'Card'
+                The card with which to compare this one
+
+        Returns:
+            bool: True if greater than 'other'
+
+        Raises:
+            AttributeError: if the object being compared is not a Card and does
+                not inherit from the Card class
+            ValueError: if the one of the objects has an inappropriate rank
+        """
+        return not self.__le__(other)
+
+    def __ge__(self, other: 'Card') -> bool:
+        """Return True if this card has a value greater than or equal to that of
+        the 'other' card; otherwise Return False.
+        
+        Arguments:
+            other: 'Card'
+                The card with which to compare this one
+
+        Returns:
+            bool: True if greater than or equal to 'other'
+
+        Raises:
+            AttributeError: if the object being compared is not a Card and does
+                not inherit from the Card class
+            ValueError: if the one of the objects has an inappropriate rank
+        """
+        return not self.__lt__(other)
 
     def __str__(self) -> str:
         """Return a string representing this card.
@@ -125,7 +206,7 @@ def unstable_sort(deck: List[Any]) -> List[Any]:
     objects in the list.
     
     This function implements a heap sort, which has an average performance of
-    O(nlog(n)) and a worst case performance of O(nlog(n)) and a memory usage of
+    O(nlog(n)) and a worst case performance of O(nlog(n)). Its memory usage is
     O(n).  This sort is not stable so the order between identical objects in the
     input array is not preserved.
     
@@ -141,11 +222,11 @@ def unstable_sort(deck: List[Any]) -> List[Any]:
         heap.append(deck[i])
         j = i
         while j > 0:
-            if j % 2 == 0 and heap[j // 2] < heap[j]:
+            if j % 2 == 0 and heap[(j - 1) // 2] < heap[j]:
                 temp = heap[j]
-                heap[j] = heap[j // 2]
-                heap[j // 2] = temp
-                j = j // 2
+                heap[j] = heap[(j - 1) // 2]
+                heap[(j - 1) // 2] = temp
+                j = (j - 1) // 2
             elif j % 2 == 1 and heap[(j - 1) // 2] < heap[j]:
                 temp = heap[j]
                 heap[j] = heap[(j - 1) // 2]
@@ -153,7 +234,6 @@ def unstable_sort(deck: List[Any]) -> List[Any]:
                 j = (j - 1) // 2
             else:
                 break
-    print("Heap: {}".format(heap))
     for i in range(len(heap) - 1, 0, -1):
         temp = heap[i]
         heap[i] = heap[0]
@@ -162,11 +242,11 @@ def unstable_sort(deck: List[Any]) -> List[Any]:
         while ((j + 1) * 2) - 1 < i:
             if (j + 1) * 2 < i \
                     and heap[(j + 1) * 2] > heap[((j + 1) * 2) - 1] \
-                    and heap[((j + 1) * 2)] > heap[j]:
+                    and heap[(j + 1) * 2] > heap[j]:
                 temp = heap[j]
                 heap[j] = heap[((j + 1) * 2)]
-                heap[((j + 1) * 2)] = temp
-                j = ((j + 1) * 2)
+                heap[(j + 1) * 2] = temp
+                j = (j + 1) * 2
             elif heap[((j + 1) * 2) - 1] > heap[j]: 
                 temp = heap[j]
                 heap[j] = heap[((j + 1) * 2) - 1]
@@ -182,9 +262,11 @@ def stable_sort(deck: List[Any]) -> List[Any]:
     objects in the list.
 
     This function implements a merge sort, which has an average performance of
-    O(nlog(n)) and a worst case performance of O(nlog(n)) and a memory usage of
-    O(n).  This sort is stable so the order between identical objects in the
-    input array is preserved.
+    O(nlog(n)) and a worst case performance of O(nlog(n)). Although merge sort
+    can have memory usage of O(n), because Python requires passing by value and
+    not by reference, this implementation uses O(nlog(n)) memory. This sort is
+    stable so the order between identical objects in the input array is
+    preserved.
     
     Arguments:
         deck: List[Any]
@@ -193,6 +275,24 @@ def stable_sort(deck: List[Any]) -> List[Any]:
     Returns:
         List[Any]: sorted list of objects
     """
+    if len(deck) > 1:
+        first = stable_sort(deck[:len(deck) // 2])
+        last = stable_sort(deck[(len(deck) // 2):])
+        i = 0
+        j = 0
+        while i < len(first) or j < len(last):
+            if i >= len(first):
+                deck[i + j] = last[j]
+                j += 1
+            elif j >= len(last):
+                deck[i + j] = first[i]
+                i += 1
+            elif first[i] < last[j]:
+                deck[i + j] = first[i]
+                i += 1
+            else:
+                deck[i + j] = last[j]
+                j += 1
     return deck
 
 
@@ -221,9 +321,8 @@ if __name__ == '__main__':
     # important that they maintain their order in the sorted array.  In other
     # words an A♠ is identical to any other A♠.  Assume that the <, ==, and >
     # operators are defined on the included Card class.
-    print(unstable_sort([9, 5, 6, 7, 2, 8, 1, 3, 4, 0, 9, 5]))
-    # print('Problem #3\n{}'.format(
-    #    [str(card) for card in unstable_sort(shuffle(deck))]))
+    print('Problem #3\n{}'.format(
+        [str(card) for card in unstable_sort(shuffle(deck))]))
 
     # Problem 4:
     # Write a function that sorts a deck of shuffled cards in O(nlong(n)) time.

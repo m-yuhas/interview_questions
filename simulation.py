@@ -12,7 +12,6 @@ except:
     pass
 
 
-
 def simulate_average_hops(n_lily_pads: List[int],
                           iterations: int) -> List[float]:
     """Simulate <iterations> number of river crossing for each n lily pads in
@@ -83,6 +82,72 @@ def actual_expected_hops(n_lily_pads: List[int]) -> List[float]:
     return final
 
 
+def simulate_pmf(n: int, iterations: int) -> List[float]:
+    """Simulate the frog crossing a river with n lily pads <iterations> times
+    and return the pmf for the probability of number of hops to cross the river.
+    
+    Arguments:
+        n: int
+            The number of lily pads to use in this simulation
+        iterations: int
+            The number of iterations to use for this simulation
+
+    Returns:
+        List[float]: list of floats representing the probability that the frog
+            takes <index> hops to cross the river.
+    """
+    raw_counts = [0 for i in range(n + 2)]
+    for i in range(iterations):
+        location = n + 1
+        hops = 0
+        while location != 0:
+            location -= randint(1, location)
+            hops += 1
+        raw_counts[hops] += 1
+    return [raw_counts[i] / sum(raw_counts) for i in range(n + 2)]
+
+
+def get_pmf(n: int) -> List[float]:
+    """Return the pmf for the number of hops it takes the frog to cross a river
+    with n lily pads.
+    
+    For n lily pads this can be expressed as the product of n sums.  This method
+    uses recursion to calculate this value.
+
+    Arguments:
+        n: int
+            The number of lily pads in the river
+
+    Returns:
+        List[float]: list of floats representing the probability that the frog
+            takes <index> hops to cross the river.
+    """
+
+    def inner_sum(min: int, max: int) -> float:
+        """Calculate the inner sum recursively.
+        
+        Arguments:
+            min: int
+                lower limit of the first sum
+            max: int
+                upper limit of the first sum
+
+        Returns:
+            float: the inner sum needed to calculate pmf(i)
+        """
+        if min == 0:
+            return 1.0
+        total = 0
+        for i in range(min, max + 1):
+            total += (1 / i) * inner_sum(min - 1, i - 1)
+        return total
+
+    pmf = [0.0]
+    for i in range(1, n + 2):
+        pmf.append((1 / (n + 1)) * inner_sum(i - 1, n))
+    return pmf
+
+
 if __name__ == '__main__':
     n_range = range(0, 100)
     
@@ -121,7 +186,24 @@ if __name__ == '__main__':
     # Simulate the probability of the frog taking m hops to cross a river with 9
     # lily pads.  In other words, simulate probability mass function for number
     # of hops to cross the river.
+    simulated_pmf = simulate_pmf(9, int(1e3))
+    print('Problem #3:\n{}'.format(simulated_pmf))
+    if 'matplotlib.pyplot' in modules:
+        pyplot.plot(range(11), simulated_pmf, 'bo')
+        pyplot.xlabel('Number of hops to cross the river')
+        pyplot.ylabel('Probability')
+        pyplot.title('Simulated PMF for the Number of Hops to Cross the River')
+        pyplot.show()
     
     # Problem 4:
     # Find a recurrence relation that provides the exact probability mass
     # function for the number of hops it takes to cross the river.
+    actual_pmf = get_pmf(9)
+    print('Problem #4:\n{}'.format(actual_pmf))
+    if 'matplotlib.pyplot' in modules:
+        pyplot.plot(range(11), simulated_pmf, 'bo', label='Simulated PMF')
+        pyplot.plot(range(11), actual_pmf, 'ro', label='Actual PMF')
+        pyplot.xlabel('Number of hops to cross the river')
+        pyplot.ylabel('Probability')
+        pyplot.title('Simulated PMF vs. Actual PMF')
+        pyplot.show()

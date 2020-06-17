@@ -3,8 +3,6 @@
 
 from math import log2
 from typing import List
-from random import uniform
-from statistics import mean
 
 
 def get_primes(n: int) -> List[int]:
@@ -134,4 +132,4 @@ if __name__ == '__main__':
     # greatest m < n which divides n and enters the queue directly behind the
     # penguin holding ticket number m.  This continues until all the penguins
     # are in the queue.  What is the order of penguins in the queue?
-    print('Problem #3:\n{}'.format(penguin_order(2019)))
+    print('Problem #4:\n{}'.format(penguin_order(2019)))
